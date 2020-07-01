@@ -1,11 +1,10 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <setting.h>
+#include "setting.h"
+#include "udp.h"
 #include <QMainWindow>
-#include <QTimer>
 #include <QCloseEvent>
-#include <udpout.h>
 
 namespace Ui {
 class Dialog;
@@ -20,20 +19,17 @@ public:
     ~Dialog();
 
 public:
-    void toStart();
-    void returnUdp(QString a);
-    void setPng(QPixmap a);
+    void toStart(Udp *a);
     void closeEvent(QCloseEvent *event);
 
 private slots:
-    void slotTimerAlarm();
     void settings();
+    void lampa(int a);
 
 private:
     Ui::Dialog *ui;
-    QTimer *timer;
     Setting *setting;
-    UdpOut *udpOut;
+    Udp *udp;
 };
 
 #endif // DIALOG_H

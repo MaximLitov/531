@@ -7,10 +7,7 @@ Dialog::Dialog(QWidget *parent) :
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
-    timer = new QTimer();
     setting = new Setting();
-    udpOut = new UdpOut();
-    connect(timer, SIGNAL(timeout()), this, SLOT(slotTimerAlarm()));
     connect(ui->action, SIGNAL(triggered()), this, SLOT(settings()));
 }
 
@@ -19,32 +16,35 @@ Dialog::~Dialog()
     delete ui;
 }
 
-void Dialog::toStart(){
-    timer->start(2000);
+void Dialog::toStart(Udp *a){
+    udp = a;
+    connect(udp, SIGNAL(lampochka(int)), this, SLOT(lampa(int)));
 }
 
-void Dialog::returnUdp(QString a){
-    setPng(QPixmap(a));
-    qDebug() << "1";
-    //":Migalka/Images/circle_red.png"
-    //setPng(QPixmap(":Migalka/Images/circle_red.png"));
-}
-
-void Dialog::setPng(QPixmap a){
-    ui->label->setPixmap(a);
-}
-
-void Dialog::slotTimerAlarm(){
-    udpOut->sendUdp(QByteArray("Продление сеанса"));
-    //setPng(QPixmap(":Migalka/Images/circle_grey.png"));
+void Dialog::lampa(int a){
+    switch (a) {
+    case 1:
+        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_green.png"));
+        break;
+    case 2:
+        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_red.png"));
+        break;
+    default:
+        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_grey.png"));
+        break;
+    }
 }
 
 void Dialog::closeEvent(QCloseEvent *event){
-    udpOut->sendUdp(QByteArray("Завершение"));
+    for (int i = 0; i < 3; i++){
+        if (udp->Disconnect() == 0){
+            break;
+        }
+    }
     event->accept();
 }
 
 void Dialog::settings(){
     setting->show();
-    setting->toStart();
+    setting->toStart(udp);
 }

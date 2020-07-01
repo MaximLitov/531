@@ -15,13 +15,16 @@ public:
 public:
     int send(QByteArray in, QByteArray& out);
     int Connect(QString login, QString password);
+    int Disconnect();
     bool isConnect();
+
+signals:
+    void lampochka(int);
 
 private slots:
     void timer();
 
 private:
-    QByteArray getMessage(int ms);
     QString host;
     int port;
     int portIn;

@@ -19,7 +19,7 @@ private:
     QString host;
 
 private:
-    void action(QByteArray arr);
+    void action(QString a);
 
 public slots:
     void timer();

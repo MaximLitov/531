@@ -7,7 +7,6 @@ Setting::Setting(QWidget *parent) :
     ui(new Ui::Setting)
 {
     ui->setupUi(this);
-    socket = new QUdpSocket(this);
 }
 
 Setting::~Setting()
@@ -15,14 +14,13 @@ Setting::~Setting()
     delete ui;
 }
 
-void Setting::toStart(){
-    socket->bind(7778);
+void Setting::toStart(Udp *a){
+    udp = a;
     ui->comboBox->addItem("Коммутирующая линия - резерв");
     ui->comboBox->addItem("Только РРР");
     ui->comboBox->addItem("Без РРР");
     ui->comboBox_2->addItem("TAP");
     ui->comboBox_2->addItem("TUN");
-    //Запрос на сервер - настройки
 }
 
 void Setting::on_pushButton_clicked()
@@ -46,7 +44,7 @@ void Setting::on_pushButton_clicked()
     }
     if (b){
         QByteArray arr;
-        arr.append("Настройки|||");
+        arr.append("Настройка|||");
         arr.append("moveLogs=1\n");
         arr.append("usePPP=" + QString::number(2 - ui->comboBox->currentIndex()) + "\n");
         arr.append("useTUN=" + QString::number(ui->comboBox_2->currentIndex()) + "\n");
@@ -65,9 +63,14 @@ void Setting::on_pushButton_clicked()
             arr.append("\"\n");
         }
         arr.append("ipNTPServer=\"" + ui->lineEdit_2->text() + "\"");
-        socket->writeDatagram(arr, QHostAddress::LocalHost, 7777);
+        QByteArray ar;
+        if (udp->send(arr, ar) == 0 && QString(ar) == "Настройка успешна"){
+
+        } else {
+            QMessageBox::warning(this, "Ошибка", "Настройки не сохранены");
+        }
     } else {
-        QMessageBox::warning(this, "Внимание","Неверный формат ip-адресса");
+        QMessageBox::warning(this, "Внимание", "Неверный формат ip-адресса");
     }
 }
 
@@ -80,4 +83,9 @@ void Setting::on_checkBox_4_clicked()
         ui->label_3->setEnabled(false);
         ui->lineEdit->setEnabled(false);
     }
+}
+
+void Setting::on_pushButton_2_clicked()
+{
+    this->close();
 }

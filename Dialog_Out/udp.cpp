@@ -17,29 +17,41 @@ Udp::Udp(QString host, int port, int portIn){
 
 void Udp::timer(){
     QByteArray a;
-    send(QByteArray("Продление"), a);
-    if (QString(a) != "Продление успешно"){
-        qDebug() << "Ошибка продления.";
-        state = false;
-    } else {
+    if (send(QByteArray("Продление"), a) == 0 && QString(a) == "Продление успешно"){
+        emit lampochka(1);
         state = true;
+    } else {
+        emit lampochka(0);
+        state = false;
     }
 }
 
 int Udp::Connect(QString login, QString password){
-
-    //
     QByteArray arr;
     arr.append(login + " ");
     arr.append(password + " ");
     arr.append(QString::number(portIn) + " ");
     arr.append(host);
     QByteArray ar;
-    send(arr, ar);
-    timer();
-    timer1 = new QTimer();
-    timer1->start(2000);
-    connect(timer1, SIGNAL(timeout()), this, SLOT(timer()));
+    if (send(arr, ar) == 0 && QString(ar) == "Вход"){
+        timer();
+        timer1 = new QTimer();
+        timer1->start(2000);
+        connect(timer1, SIGNAL(timeout()), this, SLOT(timer()));
+    } else {
+        return 1;
+    }
+    return 0;
+}
+
+int Udp::Disconnect(){
+    timer1->stop();
+    QByteArray ar;
+    if (send(QByteArray("Завершение"), ar) == 0 && QString(ar) == "Завершение успешно"){
+        emit lampochka(2);
+        return 0;
+    }
+    return 1;
 }
 
 bool Udp::isConnect(){
@@ -47,37 +59,20 @@ bool Udp::isConnect(){
 }
 
 int Udp::send(QByteArray in, QByteArray &out){
-    try {
-        socket->writeDatagram(in, QHostAddress(host), port);
-        out = getMessage(1000);
-//        while (socket->hasPendingDatagrams()){
-//            QByteArray arr;
-//            arr.resize(socket->pendingDatagramSize());
-//            socket->readDatagram(arr.data(), arr.size());
-//            out = arr;
-//            qDebug() << out;
-
-//        }
-    } catch (int e){
-        return e;
-    }
-    return 0;
-}
-
-QByteArray Udp::getMessage(int ms)
-{
-    for(int i=0; i<5; i++)
+    socket->writeDatagram(in, QHostAddress(host), port);
+    for(int i = 0; i < 10; i++)
     {
-        if(!socket->hasPendingDatagrams())
-            QThread::msleep(ms);
+        if(!socket->hasPendingDatagrams()){
+            QThread::msleep(10);
+        }
         else
         {
             QByteArray arr;
             arr.resize(socket->pendingDatagramSize());
             socket->readDatagram(arr.data(), arr.size());
-            qDebug() << arr;
-            return arr;
+            out = arr;
+            return 0;
         }
     }
-    return QByteArray();
+    return 1;
 }

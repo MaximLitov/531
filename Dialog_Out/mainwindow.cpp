@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QThread>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -9,8 +9,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     dialog = new Dialog();
     udp = new Udp("127.0.0.1", 7777, 7778);
-//    port = 7778;
-//    host = "127.0.0.1";
 }
 
 MainWindow::~MainWindow()
@@ -20,25 +18,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    int e = udp->Connect(QString(ui->lineEdit->text()), QString(ui->lineEdit_2->text()));
-//    QByteArray arr;
-//    arr.append(QString(ui->lineEdit->text()) + " ");
-//    arr.append(QString(ui->lineEdit_2->text()) + " ");
-//    arr.append(QString::number(port) + " ");
-//    arr.append(host);
-//    QByteArray ar;
-//    int e = udp->send(arr, ar);
-//    if (e != 0) {qDebug() << "Ошибка: " << e << endl;}
-//    if (QString(ar) == "Вход"){
-//        start();
-//    } else {
-//        qDebug() << "Ошибка входа.";
-//    }
+    if (udp->Connect(QString(ui->lineEdit->text()), QString(ui->lineEdit_2->text())) == 0){
+        start();
+    } else {
+        QMessageBox::warning(this, "Ошибка", "Логин или пароль неверны.");
+    }
 }
 
 void MainWindow::start()
 {
     dialog->show();
-    dialog->toStart();
+    dialog->toStart(udp);
     this->close();
 }

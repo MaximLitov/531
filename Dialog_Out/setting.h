@@ -1,8 +1,8 @@
 #ifndef SETTING_H
 #define SETTING_H
 
+#include "udp.h"
 #include <QMainWindow>
-#include <QUdpSocket>
 
 namespace Ui {
 class Setting;
@@ -17,15 +17,17 @@ public:
     ~Setting();
 
 public:
-    void toStart();
+    void toStart(Udp *a);
 
 private slots:
     void on_pushButton_clicked();
     void on_checkBox_4_clicked();
 
+    void on_pushButton_2_clicked();
+
 private:
     Ui::Setting *ui;
-    QUdpSocket *socket;
+    Udp *udp;
 };
 
 #endif // SETTING_H

@@ -18,15 +18,11 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     dialog.cpp \
     setting.cpp \
-    udpin.cpp \
-    udpout.cpp \
     udp.cpp
 
 HEADERS  += mainwindow.h \
     dialog.h \
     setting.h \
-    udpin.h \
-    udpout.h \
     udp.h
 
 FORMS    += mainwindow.ui \
