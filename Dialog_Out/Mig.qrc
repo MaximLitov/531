@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/Migalka">
+        <file>Images/circle_green.png</file>
+        <file>Images/circle_grey.png</file>
+        <file>Images/circle_red.png</file>
+    </qresource>
+</RCC>
