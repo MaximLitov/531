@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>160</width>
-    <height>189</height>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Авторизация</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -49,6 +49,9 @@
        <property name="text">
         <string>Вход</string>
        </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -60,7 +63,7 @@
      <x>0</x>
      <y>0</y>
      <width>160</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

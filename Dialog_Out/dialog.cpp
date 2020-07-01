@@ -8,6 +8,7 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
     setting = new Setting();
+    model = new QStandardItemModel();
     connect(ui->action, SIGNAL(triggered()), this, SLOT(settings()));
 }
 
@@ -32,6 +33,28 @@ void Dialog::lampa(int a){
     default:
         ui->label->setPixmap(QPixmap(":Migalka/Images/circle_grey.png"));
         break;
+    }
+}
+
+void Dialog::keyPressEvent(QKeyEvent *e){
+    if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return){
+        if (ui->lineEdit->hasFocus() && ui->lineEdit->text().trimmed() != ""){
+            QStandardItem *item;
+            item = new QStandardItem("Команда: " + ui->lineEdit->text().trimmed());
+            model->appendRow(item);
+            ui->listView->setModel(model);
+
+            QByteArray ar;
+            QByteArray arr;
+            arr.append("Команда|||");
+            arr.append(ui->lineEdit->text().trimmed());
+            if (udp->send(arr, ar) == 0){
+                item = new QStandardItem("Ответ: " + QString(ar));
+                model->appendRow(item);
+                ui->listView->setModel(model);
+            }
+            ui->lineEdit->setText("");
+        }
     }
 }
 

@@ -5,6 +5,8 @@
 #include "udp.h"
 #include <QMainWindow>
 #include <QCloseEvent>
+#include <QKeyEvent>
+#include <QStandardItemModel>
 
 namespace Ui {
 class Dialog;
@@ -20,6 +22,7 @@ public:
 
 public:
     void toStart(Udp *a);
+    void keyPressEvent(QKeyEvent *e);
     void closeEvent(QCloseEvent *event);
 
 private slots:
@@ -30,6 +33,7 @@ private:
     Ui::Dialog *ui;
     Setting *setting;
     Udp *udp;
+    QStandardItemModel *model;
 };
 
 #endif // DIALOG_H

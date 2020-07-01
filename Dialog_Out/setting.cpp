@@ -21,6 +21,47 @@ void Setting::toStart(Udp *a){
     ui->comboBox->addItem("Без РРР");
     ui->comboBox_2->addItem("TAP");
     ui->comboBox_2->addItem("TUN");
+    QByteArray ar;
+    if (udp->send(QByteArray("Настройки"), ar) == 0){
+        QStringList a = QString(ar).split("\n");
+        for (int i = 0; i < a.size(); i++){
+            QStringList b = a[i].split("=");
+
+            qDebug() << b[0];
+            qDebug() << b[1];
+            if (b[0] == "moveLogs"){
+                moveLogs = b[1].toInt();
+            }
+            if (b[0] == "usePPP"){
+                ui->comboBox->setCurrentIndex(2 - b[1].toInt());
+            }
+            if (b[0] == "useTUN"){
+                ui->comboBox_2->setCurrentIndex(b[1].toInt());
+            }
+            if (b[0] == "use3GModem"){
+                if (b[1].toInt() == 1) {ui->checkBox->setChecked(true);} else {ui->checkBox->setChecked(false);}
+            }
+            if (b[0] == "delKeys"){
+                if (b[1].toInt() == 1) {ui->checkBox_2->setChecked(true);} else {ui->checkBox_2->setChecked(false);}
+            }
+            if (b[0] == "startSsh"){
+                if (b[1].toInt() == 1) {ui->checkBox_3->setChecked(true);} else {ui->checkBox_3->setChecked(false);}
+            }
+            if (b[0] == "useBond"){
+                if (b[1].toInt() == 1) {ui->checkBox_4->setChecked(true);} else {ui->checkBox_4->setChecked(false);}
+            }
+            if (b[0] == "bondList"){
+                b[1].remove(b[1].length() - 1, 1);
+                b[1].remove(0, 1);
+                ui->lineEdit->setText(b[1]);
+            }
+            if (b[0] == "ipNTPServer"){
+                b[1].remove(b[1].length() - 1, 1);
+                b[1].remove(0, 1);
+                ui->lineEdit_2->setText(b[1]);
+            }
+        }
+    }
 }
 
 void Setting::on_pushButton_clicked()
@@ -65,7 +106,7 @@ void Setting::on_pushButton_clicked()
         arr.append("ipNTPServer=\"" + ui->lineEdit_2->text() + "\"");
         QByteArray ar;
         if (udp->send(arr, ar) == 0 && QString(ar) == "Настройка успешна"){
-
+            QMessageBox::warning(this, "", "Настройки сохранены");
         } else {
             QMessageBox::warning(this, "Ошибка", "Настройки не сохранены");
         }

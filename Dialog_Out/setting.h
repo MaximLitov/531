@@ -16,6 +16,9 @@ public:
     explicit Setting(QWidget *parent = 0);
     ~Setting();
 
+private:
+    int moveLogs;
+
 public:
     void toStart(Udp *a);
 

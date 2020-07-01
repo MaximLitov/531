@@ -33,41 +33,50 @@ void Server::timer(){
 
 void Server::readUdp()
 {
-    if (!stage){
-        while (socket->hasPendingDatagrams()){
-           //printf("Connect... \n");
-            QByteArray datagram;
-            datagram.resize(socket->pendingDatagramSize());
-            socket->readDatagram(datagram.data(), datagram.size());
-            if (Autorization(datagram)){
+    while (socket->hasPendingDatagrams()){
+        QByteArray arr;
+        arr.resize(socket->pendingDatagramSize());
+        socket->readDatagram(arr.data(), arr.size());
+        if (!stage){
+            if (Autorization(arr))
                 break;
-            }
-        }
-    } else {
-        while (socket->hasPendingDatagrams()){
-            QByteArray arr;
-            arr.resize(socket->pendingDatagramSize());
-            socket->readDatagram(arr.data(), arr.size());
+        } else {
             QStringList a = QString(arr).split("|||");
             if (a[0] == "Продление"){
                 timer1->stop();
                 timer1->start(5000);
-                printf("The extension of the session.\n");                
+                printf("The extension of the session.\n");
                 socket->writeDatagram(QByteArray("Продление успешно"), QHostAddress(host), port);
             } else if (a[0] == "Завершение"){
                 timer();
             } else if (a[0] == "Настройка"){
                 socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
                 action(a[1]);
+            } else if (a[0] == "Настройки"){
+                QByteArray arr;
+                arr.append("moveLogs=1\n");
+                arr.append("usePPP=2\n");
+                arr.append("useTUN=1\n");
+                arr.append("use3GModem=0\n");
+                arr.append("delKeys=1\n");
+                arr.append("startSsh=1\n");
+                arr.append("useBond=0\n");
+                arr.append("bondList=\"\"\n");
+                arr.append("ipNTPServer=\"127.0.0.1\"");
+                socket->writeDatagram(arr, QHostAddress(host), port);
+            } else if (a[0] == "Команда"){
+//                socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
+//                action(a[1]);
             } else {
-
+                qDebug() << a[0] << a[1];
             }
         }
     }
 }
 
+
 void Server::action(QString a){
-        qDebug() << QString(a);
+    qDebug() << QString(a);
 }
 
 bool Server::Autorization(QByteArray arr){
