@@ -49,6 +49,7 @@ int Udp::Disconnect(){
     QByteArray ar;
     if (send(QByteArray("Завершение"), ar) == 0 && QString(ar) == "Завершение успешно"){
         emit lampochka(2);
+        state = false;
         return 0;
     }
     return 1;

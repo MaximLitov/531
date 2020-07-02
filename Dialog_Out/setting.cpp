@@ -16,6 +16,7 @@ Setting::~Setting()
 
 void Setting::toStart(Udp *a){
     udp = a;
+    moveLogs = 1;
     ui->comboBox->addItem("Коммутирующая линия - резерв");
     ui->comboBox->addItem("Только РРР");
     ui->comboBox->addItem("Без РРР");
@@ -26,9 +27,6 @@ void Setting::toStart(Udp *a){
         QStringList a = QString(ar).split("\n");
         for (int i = 0; i < a.size(); i++){
             QStringList b = a[i].split("=");
-
-            qDebug() << b[0];
-            qDebug() << b[1];
             if (b[0] == "moveLogs"){
                 moveLogs = b[1].toInt();
             }
@@ -49,6 +47,7 @@ void Setting::toStart(Udp *a){
             }
             if (b[0] == "useBond"){
                 if (b[1].toInt() == 1) {ui->checkBox_4->setChecked(true);} else {ui->checkBox_4->setChecked(false);}
+                on_checkBox_4_clicked();
             }
             if (b[0] == "bondList"){
                 b[1].remove(b[1].length() - 1, 1);
@@ -86,7 +85,7 @@ void Setting::on_pushButton_clicked()
     if (b){
         QByteArray arr;
         arr.append("Настройка|||");
-        arr.append("moveLogs=1\n");
+        arr.append("moveLogs=" + QString::number(moveLogs) + "\n");
         arr.append("usePPP=" + QString::number(2 - ui->comboBox->currentIndex()) + "\n");
         arr.append("useTUN=" + QString::number(ui->comboBox_2->currentIndex()) + "\n");
         arr.append("use3GModem=");
@@ -99,10 +98,9 @@ void Setting::on_pushButton_clicked()
         if (ui->checkBox_4->isChecked()) {arr.append("1\n");} else {arr.append("0\n");}
         arr.append("bondList=\"");
         if (ui->checkBox_4->isChecked()) {
-            arr.append(ui->lineEdit->text() + "\"\n");
-        } else {
-            arr.append("\"\n");
+            arr.append(ui->lineEdit->text());
         }
+        arr.append("\"\n");
         arr.append("ipNTPServer=\"" + ui->lineEdit_2->text() + "\"");
         QByteArray ar;
         if (udp->send(arr, ar) == 0 && QString(ar) == "Настройка успешна"){

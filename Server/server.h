@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QUdpSocket>
+#include <QFile>
 
 class Server : public QObject
 {
@@ -18,9 +19,6 @@ private:
     int port;
     QString host;
 
-private:
-    void action(QString a);
-
 public slots:
     void timer();
     void readUdp();
@@ -29,6 +27,8 @@ public slots:
 private:
     QTimer *timer1;
     QUdpSocket *socket;
+    QFile *file;
+    QFile *file2;
 };
 
 #endif // SERVER_H

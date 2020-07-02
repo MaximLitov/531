@@ -12,6 +12,8 @@ Server::Server(QObject *parent) :
 {
     socket = new QUdpSocket(this);
     timer1 = new QTimer();
+    file = new QFile("../531/Server/config.ini");
+    file2 = new QFile("../531/Server/access.ini");
     stage = false;
     printf("Login: ");
     login = cin.readLine();
@@ -41,6 +43,7 @@ void Server::readUdp()
             if (Autorization(arr))
                 break;
         } else {
+            //qDebug() << arr;
             QStringList a = QString(arr).split("|||");
             if (a[0] == "Продление"){
                 timer1->stop();
@@ -50,33 +53,47 @@ void Server::readUdp()
             } else if (a[0] == "Завершение"){
                 timer();
             } else if (a[0] == "Настройка"){
-                socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
-                action(a[1]);
-            } else if (a[0] == "Настройки"){
-                QByteArray arr;
-                arr.append("moveLogs=1\n");
-                arr.append("usePPP=2\n");
-                arr.append("useTUN=1\n");
-                arr.append("use3GModem=0\n");
-                arr.append("delKeys=1\n");
-                arr.append("startSsh=1\n");
-                arr.append("useBond=0\n");
-                arr.append("bondList=\"\"\n");
-                arr.append("ipNTPServer=\"127.0.0.1\"");
-                socket->writeDatagram(arr, QHostAddress(host), port);
-            } else if (a[0] == "Команда"){
+                if (!file->open(QFile::WriteOnly)){
+                    printf("File is not found.\n");
+                } else {
+                    qDebug() << a.size();
+                    QByteArray b;
+                    b.append(a[1]);
+                    file->write(b);
+                    file->close();
+                    socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
+                }
+            } else if (a[0] == "Настройки"){// nki.ini   config.ini
+                if(!file->open(QFile::ReadOnly)){
+                   printf("File is not found.\n");
+                   //file->open(QIODevice::ReadOnly);
+                } else {
+                    QByteArray arr;
+                    while (!file->atEnd()){
+                        arr.append(QString(file->readLine()));
+                    }
+                    socket->writeDatagram(arr, QHostAddress(host), port);
+                }
+                file->close();
+            } else if (a[0] == "Команда"){// access.ini
+                if (!file2->open(QFile::ReadOnly)){
+                    printf("File is not found.\n");
+                } else {
+                    while (!file2->atEnd()){
+//                        QByteArray c;
+//                        c.append(QString(file2->readLine()));
+                        if (a[1] == QString(file2->readLine())){
+                            qDebug() << "123";
+                        }
+                    }
+                }
+                file2->close();
 //                socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
-//                action(a[1]);
             } else {
                 qDebug() << a[0] << a[1];
             }
         }
     }
-}
-
-
-void Server::action(QString a){
-    qDebug() << QString(a);
 }
 
 bool Server::Autorization(QByteArray arr){
