@@ -80,15 +80,14 @@ void Server::readUdp()
                     printf("File is not found.\n");
                 } else {
                     while (!file2->atEnd()){
-//                        QByteArray c;
-//                        c.append(QString(file2->readLine()));
                         if (a[1] == QString(file2->readLine())){
-                            qDebug() << "123";
+                            QByteArray c;
+                            c.append(a[1]);
+                            socket->writeDatagram(c, QHostAddress(host), port);
                         }
                     }
                 }
                 file2->close();
-//                socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
             } else {
                 qDebug() << a[0] << a[1];
             }
