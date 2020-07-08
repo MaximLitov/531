@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     dialog = new Dialog();
-    udp = new Udp("127.0.0.1", 7777, 7778);
+    ui->lineEdit_3->setText("192.168.32.128");
 }
 
 MainWindow::~MainWindow()
@@ -18,10 +18,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    if (udp->Connect(QString(ui->lineEdit->text()), QString(ui->lineEdit_2->text())) == 0){
+    udp = new Udp(QString(ui->lineEdit_3->text()), 7777, 7778);
+    int err = udp->Connect(QString(ui->lineEdit->text()), QString(ui->lineEdit_2->text()));
+    if (err == 0){
         start();
     } else {
-        QMessageBox::warning(this, "Ошибка", "Логин или пароль неверны.");
+        if (err == 1){
+            QMessageBox::warning(this, "Ошибка", "Ошибка подключения.");
+        } else if (err == 2){
+            QMessageBox::warning(this, "Ошибка", "Логин или пароль неверны.");
+        } else if (err == 3){
+            QMessageBox::warning(this, "Ошибка", "Ip-адрес неверен.");
+        }
+        delete udp;
     }
 }
 

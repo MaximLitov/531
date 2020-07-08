@@ -30,8 +30,23 @@
       <x>10</x>
       <y>60</y>
       <width>541</width>
-      <height>291</height>
+      <height>281</height>
      </rect>
+    </property>
+    <property name="sizeIncrement">
+     <size>
+      <width>1</width>
+      <height>1</height>
+     </size>
+    </property>
+    <property name="baseSize">
+     <size>
+      <width>1</width>
+      <height>1</height>
+     </size>
+    </property>
+    <property name="editTriggers">
+     <set>QAbstractItemView::NoEditTriggers</set>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -57,7 +72,7 @@
      <x>0</x>
      <y>0</y>
      <width>561</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

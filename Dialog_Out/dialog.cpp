@@ -20,6 +20,7 @@ Dialog::~Dialog()
 void Dialog::toStart(Udp *a){
     udp = a;
     connect(udp, SIGNAL(lampochka(int)), this, SLOT(lampa(int)));
+    connect(udp, SIGNAL(otvet(QByteArray)), this, SLOT(otvet(QByteArray)));
 }
 
 void Dialog::lampa(int a){
@@ -49,7 +50,7 @@ void Dialog::keyPressEvent(QKeyEvent *e){
             arr.append("Команда|||");
             arr.append(ui->lineEdit->text().trimmed());
             if (udp->send(arr, ar) == 0){
-                item = new QStandardItem("Ответ: " + QString(ar));
+                item = new QStandardItem("Ответ: " + QString(ar).trimmed());
                 model->appendRow(item);
                 ui->listView->setModel(model);
             }
@@ -65,6 +66,17 @@ void Dialog::closeEvent(QCloseEvent *event){
         }
     }
     event->accept();
+}
+
+void Dialog::otvet(QByteArray a){
+    QStandardItem *item;
+    item = new QStandardItem("Ответ:");
+    model->appendRow(item);
+    foreach (QString a1, QString(a).split("\n")) {
+        item = new QStandardItem(QString(a1).trimmed());
+        model->appendRow(item);
+    }
+    ui->listView->setModel(model);
 }
 
 void Dialog::settings(){

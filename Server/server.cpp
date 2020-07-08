@@ -1,19 +1,20 @@
 #include "server.h"
 #include <QDebug>
-//#include <iostream>
-//#include <string>
-//#include <QString>
 #include <QTextStream>
+#include <QThread>
+
 QTextStream cout(stdout);
 QTextStream cin(stdin);
 
 Server::Server(QObject *parent) :
     QObject(parent)
 {
+    ind = 0;
     socket = new QUdpSocket(this);
     timer1 = new QTimer();
-    file = new QFile("../531/Server/config.ini");
-    file2 = new QFile("../531/Server/access.ini");
+    file = new QFile("config.ini");
+    file2 = new QFile("access.ini");
+    log = new Log();
     stage = false;
     printf("Login: ");
     login = cin.readLine();
@@ -30,7 +31,26 @@ void Server::timer(){
     port = 0;
     host = "";
     timer1->stop();
+    log->writeLog("<ИНФОРМАЦИЯ>", "Отключено.");
     printf("Disconnected.\n");
+}
+
+void Server::process(QString a){
+    //    while (!file2->atEnd()){
+    //        QStringList b = a[1].split(" ");
+    //        if (b[0] == QString(file2->readLine())){
+    log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
+    proc.start("sh", QStringList() << "-c" << a);
+    proc.waitForFinished();
+    QByteArray output = QByteArray("Ответ|||"); //65507
+    //output.append("Ответ|||");
+    output.append(proc.readAll());
+    socket->writeDatagram(output, QHostAddress(host), port);
+    log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(output).split("|||")[1]);
+    //        } else {
+    //            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + QString(output).split("|||")[1]);
+    //        }
+    //    }
 }
 
 void Server::readUdp()
@@ -40,56 +60,62 @@ void Server::readUdp()
         arr.resize(socket->pendingDatagramSize());
         socket->readDatagram(arr.data(), arr.size());
         if (!stage){
-            if (Autorization(arr))
+            if (Autorization(arr)){
                 break;
+            } else {
+                printf("Connection error.\n");
+            }
         } else {
-            //qDebug() << arr;
             QStringList a = QString(arr).split("|||");
             if (a[0] == "Продление"){
                 timer1->stop();
-                timer1->start(5000);
+                timer1->start(3000);
+                log->writeLog("<ИНФОРМАЦИЯ>", "Продление сеанса.");
                 printf("The extension of the session.\n");
                 socket->writeDatagram(QByteArray("Продление успешно"), QHostAddress(host), port);
             } else if (a[0] == "Завершение"){
                 timer();
             } else if (a[0] == "Настройка"){
-                if (!file->open(QFile::WriteOnly)){
+                if (!file->open(QIODevice::ReadWrite)){
+                    log->writeLog("<ОШИБКА>", "Файл не найден.");
                     printf("File is not found.\n");
+                    socket->writeDatagram(QByteArray(""), QHostAddress(host), port);
                 } else {
-                    qDebug() << a.size();
                     QByteArray b;
                     b.append(a[1]);
                     file->write(b);
                     file->close();
+                    log->writeLog("<ИНФОРМАЦИЯ>", "Изменение настроек.");
                     socket->writeDatagram(QByteArray("Настройка успешна"), QHostAddress(host), port);
                 }
-            } else if (a[0] == "Настройки"){// nki.ini   config.ini
-                if(!file->open(QFile::ReadOnly)){
+            } else if (a[0] == "Настройки"){
+                if(!file->open(QIODevice::ReadWrite)){
+                    log->writeLog("<ОШИБКА>", "Файл не найден.");
                    printf("File is not found.\n");
-                   //file->open(QIODevice::ReadOnly);
+                   socket->writeDatagram(QByteArray(""), QHostAddress(host), port);
                 } else {
                     QByteArray arr;
                     while (!file->atEnd()){
                         arr.append(QString(file->readLine()));
                     }
+                    log->writeLog("<ИНФОРМАЦИЯ>", "Запрос настроек.");
                     socket->writeDatagram(arr, QHostAddress(host), port);
                 }
                 file->close();
-            } else if (a[0] == "Команда"){// access.ini
-                if (!file2->open(QFile::ReadOnly)){
+            } else if (a[0] == "Команда"){
+                if (!file2->open(QIODevice::ReadWrite)){
+                    log->writeLog("<ОШИБКА>", "Файл не найден.");
                     printf("File is not found.\n");
                 } else {
-                    while (!file2->atEnd()){
-                        if (a[1] == QString(file2->readLine())){
-                            QByteArray c;
-                            c.append(a[1]);
-                            socket->writeDatagram(c, QHostAddress(host), port);
-                        }
-                    }
+                    process(a[1]);
                 }
                 file2->close();
             } else {
-                qDebug() << a[0] << a[1];
+                QString a1;
+                foreach (QString aa, a) {
+                    a.append(aa);
+                }
+                log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Запрос не распознан: " + a1);
             }
         }
     }
@@ -102,11 +128,13 @@ bool Server::Autorization(QByteArray arr){
         port = a[2].toInt();
         host = a[3];
         socket->writeDatagram(QByteArray("Вход"), QHostAddress(host), port);
+        log->writeLog("<ИНФОРМАЦИЯ>", "Подключено.");
         printf("Connected.\n");
-        timer1->start(5000);
+        timer1->start(3000);
         return true;
-    } else {
-        printf("Connection error.\n");
+    } else if (a.size() >= 3) {
+        socket->writeDatagram(QByteArray("Ошибка входа"), QHostAddress(a[3]), a[2].toInt());
+        log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Ошибка подключения.");
     }
     return false;
 }

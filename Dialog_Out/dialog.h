@@ -28,6 +28,7 @@ public:
 private slots:
     void settings();
     void lampa(int a);
+    void otvet(QByteArray a);
 
 private:
     Ui::Dialog *ui;

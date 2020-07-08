@@ -22,9 +22,15 @@ void Setting::toStart(Udp *a){
     ui->comboBox->addItem("Без РРР");
     ui->comboBox_2->addItem("TAP");
     ui->comboBox_2->addItem("TUN");
+    ui->comboBox_3->addItem("5 сек");
+    ui->comboBox_3->addItem("10 сек");
+    ui->comboBox_3->addItem("15 сек");
+    ui->comboBox_3->addItem("20 сек");
+    ui->comboBox_3->addItem("25 сек");
+    ui->comboBox_3->addItem("30 сек");
     QByteArray ar;
     if (udp->send(QByteArray("Настройки"), ar) == 0){
-        QStringList a = QString(ar).split("\n");
+        QStringList a = QString(ar.trimmed()).split("\n");
         for (int i = 0; i < a.size(); i++){
             QStringList b = a[i].split("=");
             if (b[0] == "moveLogs"){
@@ -36,6 +42,9 @@ void Setting::toStart(Udp *a){
             if (b[0] == "useTUN"){
                 ui->comboBox_2->setCurrentIndex(b[1].toInt());
             }
+            if (b[0] == "vpnchecktime"){
+                ui->comboBox_2->setCurrentIndex(b[1].toInt() / 5 - 1);
+            }
             if (b[0] == "use3GModem"){
                 if (b[1].toInt() == 1) {ui->checkBox->setChecked(true);} else {ui->checkBox->setChecked(false);}
             }
@@ -44,6 +53,9 @@ void Setting::toStart(Udp *a){
             }
             if (b[0] == "startSsh"){
                 if (b[1].toInt() == 1) {ui->checkBox_3->setChecked(true);} else {ui->checkBox_3->setChecked(false);}
+            }
+            if (b[0] == "changeKeys"){
+                if (b[1].toInt() == 1) {ui->checkBox_5->setChecked(true);} else {ui->checkBox_5->setChecked(false);}
             }
             if (b[0] == "useBond"){
                 if (b[1].toInt() == 1) {ui->checkBox_4->setChecked(true);} else {ui->checkBox_4->setChecked(false);}
@@ -63,36 +75,39 @@ void Setting::toStart(Udp *a){
     }
 }
 
+enum TypeSending
+{
+    SEND_DATA = 0,
+    SEND_END = 1,
+    SEND_SET_LOG = 3
+};
+
+struct Data
+{
+    TypeSending type;
+    QByteArray arr;
+    QSize GetSize()
+    {
+        return arr.size() * sizeof(QByteArray) + sizeof(TypeSending);
+    }
+};
+
 void Setting::on_pushButton_clicked()
 {
-    QStringList a = ui->lineEdit_2->text().split(".");
-    bool b = false;
-    if (a.size() == 4){
-        if (0 <= a[0].toInt() && a[0].toInt() <= 255 &&
-            0 <= a[1].toInt() && a[1].toInt() <= 255 &&
-            0 <= a[2].toInt() && a[2].toInt() <= 255 &&
-            0 <= a[3].toInt() && a[3].toInt() <= 255){
-            bool c = true;
-            for (int i = 0; i < 4; i++){
-                a[i].toInt(&c);
-                if (!c){
-                    break;
-                }
-            }
-            b = c;
-        }
-    }
-    if (b){
+    if (udp->isIp(ui->lineEdit_2->text())){
         QByteArray arr;
         arr.append("Настройка|||");
         arr.append("moveLogs=" + QString::number(moveLogs) + "\n");
         arr.append("usePPP=" + QString::number(2 - ui->comboBox->currentIndex()) + "\n");
         arr.append("useTUN=" + QString::number(ui->comboBox_2->currentIndex()) + "\n");
+        arr.append("vpnchecktime=" + QString::number((ui->comboBox_3->currentIndex() + 1) * 5) + "\n");
         arr.append("use3GModem=");
         if (ui->checkBox->isChecked()) {arr.append("1\n");} else {arr.append("0\n");}
         arr.append("delKeys=");
         if (ui->checkBox_2->isChecked()) {arr.append("1\n");} else {arr.append("0\n");}
         arr.append("startSsh=");
+        if (ui->checkBox_3->isChecked()) {arr.append("1\n");} else {arr.append("0\n");}
+        arr.append("changeKeys=");
         if (ui->checkBox_3->isChecked()) {arr.append("1\n");} else {arr.append("0\n");}
         arr.append("useBond=");
         if (ui->checkBox_4->isChecked()) {arr.append("1\n");} else {arr.append("0\n");}
@@ -105,6 +120,7 @@ void Setting::on_pushButton_clicked()
         QByteArray ar;
         if (udp->send(arr, ar) == 0 && QString(ar) == "Настройка успешна"){
             QMessageBox::warning(this, "", "Настройки сохранены");
+            this->close();
         } else {
             QMessageBox::warning(this, "Ошибка", "Настройки не сохранены");
         }

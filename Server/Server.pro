@@ -17,7 +17,9 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-    server.cpp
+    server.cpp \
+    log.cpp
 
 HEADERS += \
-    server.h
+    server.h \
+    log.h

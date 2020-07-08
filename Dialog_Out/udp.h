@@ -17,9 +17,11 @@ public:
     int Connect(QString login, QString password);
     int Disconnect();
     bool isConnect();
+    bool isIp(QString d);
 
 signals:
     void lampochka(int);
+    void otvet(QByteArray);
 
 private slots:
     void timer();
@@ -29,6 +31,8 @@ private:
     int port;
     int portIn;
     bool state;
+    QString login;
+    QString password;
 
 private:
     QUdpSocket *socket;
