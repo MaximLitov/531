@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include "log.h"
+#include "udp.h"
 #include <QObject>
 #include <QTimer>
 #include <QUdpSocket>
@@ -23,20 +24,20 @@ private:
     int ind;
 
 private:
-    void process(QString a);
-    bool Autorization(QByteArray arr);
+    void process();
+    bool Autorization();
 
 public slots:
+    void tree(TypeSending type);
     void timer();
-    void readUdp();
 
 private:
     QTimer *timer1;
-    QUdpSocket *socket;
     QFile *file;
     QFile *file2;
     QProcess proc;
     Log *log;
+    Udp *udp;
 };
 
 #endif // SERVER_H

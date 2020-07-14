@@ -12,15 +12,16 @@ QT += network
 TARGET = Server
 CONFIG   += console
 CONFIG   -= app_bundle
-CONFIG += debug
 
 TEMPLATE = app
 
 
 SOURCES += main.cpp \
     server.cpp \
-    log.cpp
+    log.cpp \
+    udp.cpp
 
 HEADERS += \
     server.h \
-    log.h
+    log.h \
+    udp.h
