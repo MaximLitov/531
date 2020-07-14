@@ -14,8 +14,9 @@ Setting::~Setting()
     delete ui;
 }
 
-void Setting::toStart(Udp *a){
+void Setting::toStart(Udp *a, Core *b){
     udp = a;
+    core = b;
     moveLogs = 1;
     ui->comboBox->addItem("Коммутирующая линия - резерв");
     ui->comboBox->addItem("Только РРР");
@@ -29,7 +30,8 @@ void Setting::toStart(Udp *a){
     ui->comboBox_3->addItem("25 сек");
     ui->comboBox_3->addItem("30 сек");
     QByteArray ar;
-    if (udp->send(QByteArray("Настройки"), ar) == 0){
+    TypeSending type = SEND_GETSETTINGS;
+    if (udp->send(QByteArray(), ar, type) == 0 && type == SEND_GETSETTINGS){
         QStringList a = QString(ar.trimmed()).split("\n");
         for (int i = 0; i < a.size(); i++){
             QStringList b = a[i].split("=");
@@ -72,29 +74,14 @@ void Setting::toStart(Udp *a){
                 ui->lineEdit_2->setText(b[1]);
             }
         }
+    } else {
+        QMessageBox::warning(this, "Ошибка", "Ошибка получения текущих настроек");
     }
 }
 
-enum TypeSending
-{
-    SEND_DATA = 0,
-    SEND_END = 1,
-    SEND_SET_LOG = 3
-};
-
-struct Data
-{
-    TypeSending type;
-    QByteArray arr;
-    QSize GetSize()
-    {
-        return arr.size() * sizeof(QByteArray) + sizeof(TypeSending);
-    }
-};
-
 void Setting::on_pushButton_clicked()
 {
-    if (udp->isIp(ui->lineEdit_2->text())){
+    if (core->isIP(ui->lineEdit_2->text())){
         QByteArray arr;
         arr.append("Настройка|||");
         arr.append("moveLogs=" + QString::number(moveLogs) + "\n");
@@ -117,8 +104,7 @@ void Setting::on_pushButton_clicked()
         }
         arr.append("\"\n");
         arr.append("ipNTPServer=\"" + ui->lineEdit_2->text() + "\"");
-        QByteArray ar;
-        if (udp->send(arr, ar) == 0 && QString(ar) == "Настройка успешна"){
+        if (udp->send(arr, SEND_SETSETTINGS) == 0){
             QMessageBox::warning(this, "", "Настройки сохранены");
             this->close();
         } else {

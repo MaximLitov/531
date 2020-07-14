@@ -12,6 +12,7 @@ QT += network
 TARGET = Server
 CONFIG   += console
 CONFIG   -= app_bundle
+CONFIG += debug
 
 TEMPLATE = app
 

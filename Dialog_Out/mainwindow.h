@@ -3,6 +3,7 @@
 
 #include "dialog.h"
 #include "udp.h"
+#include "core.h"
 #include <QMainWindow>
 
 namespace Ui {
@@ -30,6 +31,7 @@ private:
     Ui::MainWindow *ui;
     Dialog *dialog;
     Udp *udp;
+    Core *core;
 };
 
 #endif // MAINWINDOW_H

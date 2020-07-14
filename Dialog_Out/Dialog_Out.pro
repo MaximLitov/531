@@ -18,12 +18,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     dialog.cpp \
     setting.cpp \
-    udp.cpp
+    udp.cpp \
+    core.cpp
 
 HEADERS  += mainwindow.h \
     dialog.h \
     setting.h \
-    udp.h
+    udp.h \
+    core.h
 
 FORMS    += mainwindow.ui \
     dialog.ui \

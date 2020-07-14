@@ -39,14 +39,14 @@ void Server::process(QString a){
     //    while (!file2->atEnd()){
     //        QStringList b = a[1].split(" ");
     //        if (b[0] == QString(file2->readLine())){
-    log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
-    proc.start("sh", QStringList() << "-c" << a);
-    proc.waitForFinished();
-    QByteArray output = QByteArray("Ответ|||"); //65507
-    //output.append("Ответ|||");
-    output.append(proc.readAll());
-    socket->writeDatagram(output, QHostAddress(host), port);
-    log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(output).split("|||")[1]);
+//    log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
+//    proc.start("sh", QStringList() << "-c" << a);
+//    proc.waitForFinished();
+//    QByteArray output = QByteArray("Ответ|||"); //65507
+//    //output.append("Ответ|||");
+//    output.append(proc.readAll());
+//    socket->writeDatagram(output, QHostAddress(host), port);
+//    log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(output).split("|||")[1]);
     //        } else {
     //            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + QString(output).split("|||")[1]);
     //        }

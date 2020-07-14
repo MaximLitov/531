@@ -1,6 +1,7 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 #include <QMenu>
+#include "udp.h"
 
 Dialog::Dialog(QWidget *parent) :
     QMainWindow(parent),
@@ -17,23 +18,30 @@ Dialog::~Dialog()
     delete ui;
 }
 
-void Dialog::toStart(Udp *a){
+void Dialog::toStart(Udp *a, Core *b){
     udp = a;
-    connect(udp, SIGNAL(lampochka(int)), this, SLOT(lampa(int)));
-    connect(udp, SIGNAL(otvet(QByteArray)), this, SLOT(otvet(QByteArray)));
+    core = b;
+    connect(udp, SIGNAL(otvUdp(TypeSending)), this, SLOT(otvUdp(TypeSending)));
+    connect(core, SIGNAL(isConnect(bool)), this, SLOT(con(bool)));
 }
 
-void Dialog::lampa(int a){
-    switch (a) {
-    case 1:
-        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_green.png"));
-        break;
-    case 2:
+void Dialog::otvUdp(TypeSending type){
+    if (type == SEND_END){
         ui->label->setPixmap(QPixmap(":Migalka/Images/circle_red.png"));
-        break;
-    default:
-        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_grey.png"));
-        break;
+        core->returnConnect();
+    } else if (type == SEND_OTVET){
+        QStandardItem *item;
+        item = new QStandardItem("Ответ: /n" + QString(udp->getArray()).trimmed());
+        model->appendRow(item);
+        ui->listView->setModel(model);
+    }
+}
+
+void Dialog::con(bool a){
+    if (a) {
+        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_green.png"));
+    } else {
+        ui->label->setPixmap(QPixmap(":Migalka/Images/circle_red.png"));
     }
 }
 
@@ -47,10 +55,10 @@ void Dialog::keyPressEvent(QKeyEvent *e){
 
             QByteArray ar;
             QByteArray arr;
-            arr.append("Команда|||");
             arr.append(ui->lineEdit->text().trimmed());
-            if (udp->send(arr, ar) == 0){
-                item = new QStandardItem("Ответ: " + QString(ar).trimmed());
+            TypeSending type = SEND_OTVET;
+            if (udp->send(arr, ar, type) == 0 && type == SEND_OTVET){
+                item = new QStandardItem("Ответ: /n" + QString(ar).trimmed());
                 model->appendRow(item);
                 ui->listView->setModel(model);
             }
@@ -60,26 +68,11 @@ void Dialog::keyPressEvent(QKeyEvent *e){
 }
 
 void Dialog::closeEvent(QCloseEvent *event){
-    for (int i = 0; i < 3; i++){
-        if (udp->Disconnect() == 0){
-            break;
-        }
-    }
+    udp->send(QByteArray(), SEND_END);
     event->accept();
-}
-
-void Dialog::otvet(QByteArray a){
-    QStandardItem *item;
-    item = new QStandardItem("Ответ:");
-    model->appendRow(item);
-    foreach (QString a1, QString(a).split("\n")) {
-        item = new QStandardItem(QString(a1).trimmed());
-        model->appendRow(item);
-    }
-    ui->listView->setModel(model);
 }
 
 void Dialog::settings(){
     setting->show();
-    setting->toStart(udp);
+    setting->toStart(udp, core);
 }

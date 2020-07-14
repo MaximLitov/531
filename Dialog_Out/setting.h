@@ -2,6 +2,7 @@
 #define SETTING_H
 
 #include "udp.h"
+#include "core.h"
 #include <QMainWindow>
 
 namespace Ui {
@@ -20,17 +21,17 @@ private:
     int moveLogs;
 
 public:
-    void toStart(Udp *a);
+    void toStart(Udp *a, Core *b);
 
 private slots:
     void on_pushButton_clicked();
     void on_checkBox_4_clicked();
-
     void on_pushButton_2_clicked();
 
 private:
     Ui::Setting *ui;
     Udp *udp;
+    Core *core;
 };
 
 #endif // SETTING_H

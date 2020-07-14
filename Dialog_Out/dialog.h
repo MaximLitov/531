@@ -3,6 +3,7 @@
 
 #include "setting.h"
 #include "udp.h"
+#include "core.h"
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QKeyEvent>
@@ -21,20 +22,21 @@ public:
     ~Dialog();
 
 public:
-    void toStart(Udp *a);
+    void toStart(Udp *a, Core *b);
     void keyPressEvent(QKeyEvent *e);
     void closeEvent(QCloseEvent *event);
 
 private slots:
     void settings();
-    void lampa(int a);
-    void otvet(QByteArray a);
+    void otvUdp(TypeSending type);
+    void con(bool a);
 
 private:
     Ui::Dialog *ui;
     Setting *setting;
     Udp *udp;
     QStandardItemModel *model;
+    Core *core;
 };
 
 #endif // DIALOG_H
