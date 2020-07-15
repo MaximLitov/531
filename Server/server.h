@@ -20,10 +20,12 @@ private:
     QString password;
     bool stage;
     int ind;
+    int maxtime;
 
 private:
     void process();
     bool Autorization();
+    void toStart();
 
 public slots:
     void tree(TypeSending type);

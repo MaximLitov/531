@@ -20,7 +20,7 @@ void Core::timer(){
         TypeSending type = SEND_AUTOR;
         QByteArray a;
         if (udp->send(aut, a, type) == 0 && type == SEND_OK){
-            emit isConnect(false);
+            emit isConnect(true);
             con = true;
         }
     }

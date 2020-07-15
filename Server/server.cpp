@@ -25,6 +25,18 @@ Server::Server(QObject *parent) :
     connect(udp, SIGNAL(otvUdp(TypeSending)), this, SLOT(tree(TypeSending)));
     connect(timer1, SIGNAL(timeout()), this, SLOT(timer()));
     log->writeLog("<ИНФОРМАЦИЯ>", "Сервер запущен.");
+    toStart();
+}
+
+void Server::toStart(){
+    if (!file2->open(QIODevice::ReadWrite)){
+        log->writeLog("<ОШИБКА>", "Файл не найден.");
+        printf("File is not found.\n");
+    } else {
+        maxtime = QString(file2->readLine()).toInt();
+        qDebug() << maxtime;
+        file2->close();
+    }
 }
 
 void Server::timer(){
@@ -44,11 +56,12 @@ void Server::process(){
     } else {
         //    while (!file2->atEnd()){
         //        QStringList b = a[1].split(" ");
+        //        file2->readLine();
         //        if (b[0] == QString(file2->readLine())){
         QString a = QString(udp->getArray());
         log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
         proc.start("sh", QStringList() << "-c" << a);
-        proc.waitForFinished(3000);
+        proc.waitForFinished(maxtime);
         QByteArray out = QByteArray(proc.readAll());
         //output.append("Ответ|||");
         udp->send(out, TypeSending::SEND_OTVET);
@@ -57,9 +70,8 @@ void Server::process(){
         //            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + QString(output).split("|||")[1]);
         //        }
         //    }
+        file2->close();
     }
-    file2->close();
-
 }
 
 void Server::tree(TypeSending type){
