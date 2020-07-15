@@ -34,7 +34,6 @@ void Server::toStart(){
         printf("File is not found.\n");
     } else {
         maxtime = QString(file2->readLine()).toInt();
-        qDebug() << maxtime;
         file2->close();
     }
 }
@@ -54,23 +53,25 @@ void Server::process(){
         log->writeLog("<ОШИБКА>", "Файл не найден.");
         printf("File is not found.\n");
     } else {
-        //    while (!file2->atEnd()){
-        //        QStringList b = a[1].split(" ");
-        //        file2->readLine();
-        //        if (b[0] == QString(file2->readLine())){
-        QString a = QString(udp->getArray());
-        log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
-        proc.start("sh", QStringList() << "-c" << a);
-        proc.waitForFinished(maxtime);
-        QByteArray out = QByteArray(proc.readAll());
-        //output.append("Ответ|||");
-        udp->send(out, TypeSending::SEND_OTVET);
-        log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(out));
-        //        } else {
-        //            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + QString(output).split("|||")[1]);
-        //        }
-        //    }
-        file2->close();
+        bool c = true;
+        file2->readLine();
+        QString b = QString(udp->getArray()).split(" ")[0];
+        while (!file2->atEnd() && c){
+            if (b == QString(file2->readLine()).split("\n")[0]){
+                log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + QString(udp->getArray()));
+                proc.start("sh", QStringList() << "-c" << QString(udp->getArray()));
+                proc.waitForFinished(maxtime);
+                QByteArray out = QByteArray(proc.readAll());
+                udp->send(out, TypeSending::SEND_OTVET);
+                log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(out));
+                c = false;
+            }
+        }
+        if (c){
+            udp->send(QByteArray("Команда не распознана"), TypeSending::SEND_OTVET);
+            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + b);
+        }
+    file2->close();
     }
 }
 
