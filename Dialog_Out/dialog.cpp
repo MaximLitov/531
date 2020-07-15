@@ -31,8 +31,13 @@ void Dialog::otvUdp(TypeSending type){
         core->returnConnect();
     } else if (type == SEND_OTVET){
         QStandardItem *item;
-        item = new QStandardItem("Ответ: /n" + QString(udp->getArray()).trimmed());
+        item = new QStandardItem("Ответ:");
         model->appendRow(item);
+        QStringList a = QString(udp->getArray()).split("\n");
+        for (int i = 0; i < a.size(); i++){
+            item = new QStandardItem(QString(a[i]).trimmed());
+            model->appendRow(item);
+        }
         ui->listView->setModel(model);
     }
 }
@@ -52,16 +57,11 @@ void Dialog::keyPressEvent(QKeyEvent *e){
             item = new QStandardItem("Команда: " + ui->lineEdit->text().trimmed());
             model->appendRow(item);
             ui->listView->setModel(model);
-
             QByteArray ar;
             QByteArray arr;
             arr.append(ui->lineEdit->text().trimmed());
-            TypeSending type = SEND_OTVET;
-            if (udp->send(arr, ar, type) == 0 && type == SEND_OTVET){
-                item = new QStandardItem("Ответ: /n" + QString(ar).trimmed());
-                model->appendRow(item);
-                ui->listView->setModel(model);
-            }
+            TypeSending type = SEND_COMMAND;
+            udp->send(arr, type);
             ui->lineEdit->setText("");
         }
     }

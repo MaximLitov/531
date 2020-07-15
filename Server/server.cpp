@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QTextStream>
 #include <QThread>
+#include <QNetworkInterface>
 
 QTextStream cout(stdout);
 QTextStream cin(stdin);
@@ -15,11 +16,12 @@ Server::Server(QObject *parent) :
     file2 = new QFile("access.ini");
     log = new Log();
     stage = false;
+    qDebug() << "IP: " + QNetworkInterface::allAddresses()[2].toString();
     printf("Login: ");
     login = cin.readLine();
     printf("Password: ");
     password = cin.readLine();
-    udp = new Udp(host, port, 7777);
+    udp = new Udp("", 0, 7777);
     connect(udp, SIGNAL(otvUdp(TypeSending)), this, SLOT(tree(TypeSending)));
     connect(timer1, SIGNAL(timeout()), this, SLOT(timer()));
     log->writeLog("<ИНФОРМАЦИЯ>", "Сервер запущен.");
@@ -28,30 +30,36 @@ Server::Server(QObject *parent) :
 void Server::timer(){
     udp->send(QByteArray(), TypeSending::SEND_END);
     stage = false;
-    port = 0;
-    host = "";
+    udp->setPort(-1);
+    udp->setHost("");
     timer1->stop();
-    delete udp;
     log->writeLog("<ИНФОРМАЦИЯ>", "Отключено.");
     printf("Disconnected.\n");
 }
 
 void Server::process(){
-    //    while (!file2->atEnd()){
-    //        QStringList b = a[1].split(" ");
-    //        if (b[0] == QString(file2->readLine())){
-    QString a = QString(udp->getArray());
-    log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
-    proc.start("sh", QStringList() << "-c" << a);
-    proc.waitForFinished();
-    QByteArray output = QByteArray(proc.readAll()); //65507
-    //output.append("Ответ|||");
-    udp->send(QByteArray(output), TypeSending::SEND_COMMAND);
-    log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(output));
-    //        } else {
-    //            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + QString(output).split("|||")[1]);
-    //        }
-    //    }
+    if (!file2->open(QIODevice::ReadWrite)){
+        log->writeLog("<ОШИБКА>", "Файл не найден.");
+        printf("File is not found.\n");
+    } else {
+        //    while (!file2->atEnd()){
+        //        QStringList b = a[1].split(" ");
+        //        if (b[0] == QString(file2->readLine())){
+        QString a = QString(udp->getArray());
+        log->writeLog("<ИНФОРМАЦИЯ>", "Запуск команды: " + a);
+        proc.start("sh", QStringList() << "-c" << a);
+        proc.waitForFinished(3000);
+        QByteArray out = QByteArray(proc.readAll());
+        //output.append("Ответ|||");
+        udp->send(out, TypeSending::SEND_OTVET);
+        log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(out));
+        //        } else {
+        //            log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Команда не распознана: " + QString(output).split("|||")[1]);
+        //        }
+        //    }
+    }
+    file2->close();
+
 }
 
 void Server::tree(TypeSending type){
@@ -64,7 +72,7 @@ void Server::tree(TypeSending type){
     } else {
         if (type == TypeSending::SEND_CHECK_CONNECT){
             timer1->stop();
-            timer1->start(3000);
+            timer1->start(5000);
             log->writeLog("<ИНФОРМАЦИЯ>", "Продление сеанса.");
             printf("The extension of the session.\n");
             udp->send(QByteArray(), TypeSending::SEND_CHECK_CONNECT);
@@ -97,13 +105,7 @@ void Server::tree(TypeSending type){
             }
             file->close();
         } else if (type == TypeSending::SEND_COMMAND){
-            if (!file2->open(QIODevice::ReadWrite)){
-                log->writeLog("<ОШИБКА>", "Файл не найден.");
-                printf("File is not found.\n");
-            } else {
-                process();
-            }
-            file2->close();
+            process();
         } else {
             log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Запрос не распознан.");
         }
@@ -115,15 +117,19 @@ bool Server::Autorization(){
     QStringList a = QString(udp->getArray()).split(" ");
     if (a[0] == login && a[1] == password){
         stage = true;
-        port = a[2].toInt();
-        host = a[3];
+        udp->setPort(a[2].toInt());
+        udp->setHost(a[3]);
         udp->send(QByteArray(), TypeSending::SEND_AUTOR);
         log->writeLog("<ИНФОРМАЦИЯ>", "Подключено.");
         printf("Connected.\n");
-        timer1->start(3000);
+        timer1->start(5000);
         return true;
     } else if (a.size() == 4) {
+        udp->setPort(a[2].toInt());
+        udp->setHost(a[3]);
         udp->send(QByteArray(), TypeSending::SEND_ERROR);
+        udp->setPort(-1);
+        udp->setHost("");
         log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Ошибка подключения.");
     }
     return false;

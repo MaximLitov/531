@@ -19,8 +19,6 @@ private:
     QString login;
     QString password;
     bool stage;
-    int port;
-    QString host;
     int ind;
 
 private:

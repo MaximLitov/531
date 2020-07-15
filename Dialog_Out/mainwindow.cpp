@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
+#include <QNetworkInterface>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -9,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     dialog = new Dialog();
     core = new Core();
-    ui->lineEdit_3->setText("192.168.32.128");
+    ui->lineEdit_3->setText("192.168.32.129");
 }
 
 MainWindow::~MainWindow()
@@ -24,12 +25,12 @@ void MainWindow::on_pushButton_clicked()
         QByteArray in;
         in.append(QString(ui->lineEdit->text()) + " ");
         in.append(QString(ui->lineEdit_2->text()) + " ");
-        in.append(QString::number(udp->getPort()) + " ");
-        in.append(udp->getHost());
+        in.append(QString::number(udp->getThisPort()) + " ");
+        in.append(QNetworkInterface::allAddresses()[1].toString());
         TypeSending type = SEND_AUTOR;
         QByteArray a;
         if (udp->send(in, a, type) == 0){
-            if (type == SEND_AUTOR){
+            if (type == SEND_OK){
                 core->setAut(in);
                 start();
             } else {

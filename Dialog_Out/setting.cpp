@@ -31,7 +31,7 @@ void Setting::toStart(Udp *a, Core *b){
     ui->comboBox_3->addItem("30 сек");
     QByteArray ar;
     TypeSending type = SEND_GETSETTINGS;
-    if (udp->send(QByteArray(), ar, type) == 0 && type == SEND_GETSETTINGS){
+    if (udp->send(QByteArray(), ar, type) == 0 && type == SEND_OK){
         QStringList a = QString(ar.trimmed()).split("\n");
         for (int i = 0; i < a.size(); i++){
             QStringList b = a[i].split("=");

@@ -8,6 +8,7 @@ Udp::Udp(QString host, int port, int thisPort){
     socket->bind(thisPort);
     this->host = host;
     this->port = port;
+    this->thisPort = thisPort;
     connect(socket, SIGNAL(readyRead()), this, SLOT(read()));
 }
 
@@ -16,14 +17,17 @@ void Udp::read(){
     emit otvUdp(data.type);
 }
 
-int Udp::send(QByteArray in, QByteArray &out, TypeSending type){
+int Udp::send(QByteArray in, QByteArray &out, TypeSending &type){
     data.arr = in;
     data.type = type;
+    TypeSending a = type;
+    type = SEND_ERROR;
     sendCore();
     if (takeCore() == 1){
         return 2;
     }
-    if (data.type == type){
+    if (data.type == a){
+        type = SEND_OK;
         out = data.arr;
         return 0;
     }
@@ -39,45 +43,31 @@ int Udp::send(QByteArray in, TypeSending type){
 
 int Udp::sendCore(){
     QByteArray buff = data.getBuff();
-    QByteArray out;
     int sData = data.getSize();
-    int sSendData = 65507 - 1;
+    int sSendData = 65507;
     int count = sData / sSendData;
     for (int i = count; i >= 0; i--){
         QByteArray tmp;
-        tmp.append(QString::number(i));
         if (i == 0){
-            tmp.append(buff.mid((count - i) * sSendData, buff.length()));
-            qDebug() << buff.mid((count - i) * sSendData, buff.length()).length();
+            tmp.append(buff.mid((count - i) * sSendData));
         } else {
-            tmp.append(buff.mid((count - i) * sSendData, (count - i + 1) * sSendData));
+            tmp.append(buff.mid((count - i) * sSendData, sSendData));
         }
         socket->writeDatagram(tmp, QHostAddress(host), port);
-        out = waitUdp();
-        if (out == QByteArray()){
-            return 1;
-        } else {
-            if (QString(out).toInt() != i){
-                return 2;
-            }
-        }
     }
     return 0;
 }
 
 int Udp::takeCore(){
-    QByteArray mess = waitUdp();
-    if (mess == QByteArray()){
-        return 1;
-    }
-    QByteArray out = mess.right(mess.length() - sizeof(int));
-    for (int i = mess.left(sizeof(int)).toInt() - 1; i >= 0; i--){
-        mess.clear();
-        mess = waitUdp();
-        if (mess.left(sizeof(int)).toInt() == i){
-            out = mess.right(mess.length() - sizeof(int));
-        } else {
+    QByteArray out;
+    while (true){
+        QByteArray a = waitUdp();
+        if (a == QByteArray()){
             return 1;
+        }
+        out.append(a);
+        if (a.length() < 65507){
+            break;
         }
     }
     data.setBuff(out);
@@ -85,7 +75,7 @@ int Udp::takeCore(){
 }
 
 QByteArray Udp::waitUdp(){
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 10; i++)
     {
         if(!socket->hasPendingDatagrams()){
             QThread::msleep(10);
@@ -113,6 +103,18 @@ int Udp::getPort(){
     return port;
 }
 
+int Udp::getThisPort(){
+    return thisPort;
+}
+
 QString Udp::getHost(){
     return host;
+}
+
+void Udp::setPort(int port){
+    this->port = port;
+}
+
+void Udp::setHost(QString host){
+    this->host = host;
 }

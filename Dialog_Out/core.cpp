@@ -12,14 +12,14 @@ void Core::timer(){
         TypeSending type = SEND_CHECK_CONNECT;
         QByteArray a;
         udp->send(QByteArray(), a, type);
-        if (type != SEND_CHECK_CONNECT){
+       if (type != SEND_OK){
             emit isConnect(false);
             con = false;
         }
     } else {
         TypeSending type = SEND_AUTOR;
         QByteArray a;
-        if (udp->send(aut, a, type) == 0 && type == SEND_AUTOR){
+        if (udp->send(aut, a, type) == 0 && type == SEND_OK){
             emit isConnect(false);
             con = true;
         }
