@@ -23,6 +23,7 @@ void Dialog::toStart(Udp *a, Core *b){
     core = b;
     connect(udp, SIGNAL(otvUdp(TypeSending)), this, SLOT(otvUdp(TypeSending)));
     connect(core, SIGNAL(isConnect(bool)), this, SLOT(con(bool)));
+    fs = new FileShow();
 }
 
 void Dialog::otvUdp(TypeSending type){
@@ -75,4 +76,10 @@ void Dialog::closeEvent(QCloseEvent *event){
 void Dialog::settings(){
     setting->show();
     setting->toStart(udp, core);
+}
+
+void Dialog::on_pushButton_clicked()
+{
+    fs->toStart(udp, "Logs/Log.ini");
+    fs->show();
 }

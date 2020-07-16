@@ -15,7 +15,8 @@ enum TypeSending
     SEND_END = 6,
     SEND_GETSETTINGS = 7,
     SEND_SETSETTINGS = 8,
-    SEND_COMMAND = 9
+    SEND_COMMAND = 9,
+    SEND_FILE = 10
 };
 
 struct Data

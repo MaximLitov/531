@@ -4,6 +4,7 @@
 #include "setting.h"
 #include "udp.h"
 #include "core.h"
+#include "fileshow.h"
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QKeyEvent>
@@ -31,12 +32,15 @@ private slots:
     void otvUdp(TypeSending type);
     void con(bool a);
 
+    void on_pushButton_clicked();
+
 private:
     Ui::Dialog *ui;
     Setting *setting;
     Udp *udp;
     QStandardItemModel *model;
     Core *core;
+    FileShow *fs;
 };
 
 #endif // DIALOG_H

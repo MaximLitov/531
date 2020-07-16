@@ -63,7 +63,7 @@ void Server::process(){
                 proc.waitForFinished(maxtime);
                 QByteArray out = QByteArray(proc.readAll());
                 udp->send(out, TypeSending::SEND_OTVET);
-                log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды: " + QString(out));
+                log->writeLog("<ИНФОРМАЦИЯ>", "Ответ команды:\n" + QString(out));
                 c = false;
             }
         }
@@ -119,7 +119,22 @@ void Server::tree(TypeSending type){
             file->close();
         } else if (type == TypeSending::SEND_COMMAND){
             process();
-        } else {
+        } else if (type == TypeSending::SEND_FILE){
+            QFile *f = new QFile(QString(udp->getArray()));
+            if(!f->open(QIODevice::ReadWrite)){
+                log->writeLog("<ОШИБКА>", "Файл не найден.");
+               printf("File is not found.\n");
+               udp->send(QByteArray(), TypeSending::SEND_ERROR);
+            } else {
+                QByteArray arr;
+                while (!f->atEnd()){
+                    arr.append(QString(f->readLine()));
+                }
+                log->writeLog("<ИНФОРМАЦИЯ>", "Запрос файла: " + QString(udp->getArray()));
+                udp->send(arr, TypeSending::SEND_FILE);
+            }
+            f->close();
+        }else {
             log->writeLog("<ПРЕДУПРЕЖДЕНИЕ>", "Запрос не распознан.");
         }
     }

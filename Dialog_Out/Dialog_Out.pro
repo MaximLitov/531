@@ -19,17 +19,20 @@ SOURCES += main.cpp\
     dialog.cpp \
     setting.cpp \
     udp.cpp \
-    core.cpp
+    core.cpp \
+    fileshow.cpp
 
 HEADERS  += mainwindow.h \
     dialog.h \
     setting.h \
     udp.h \
-    core.h
+    core.h \
+    fileshow.h
 
 FORMS    += mainwindow.ui \
     dialog.ui \
-    setting.ui
+    setting.ui \
+    fileshow.ui
 
 RESOURCES += \
     Mig.qrc
